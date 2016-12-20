@@ -1,5 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define("machine", {
+    var Machine = sequelize.define("machine", {
+        workcellId: DataTypes.INTEGER,
         code: DataTypes.STRING(50),
         serialNumber: DataTypes.STRING(100),
         model: DataTypes.STRING(100),
@@ -10,6 +11,11 @@ module.exports = function(sequelize, DataTypes) {
     {
         timestamps: true,
         paranoid: true,
-        underscored: true
+        classMethods: {
+            associate: function(models) {
+                Machine.belongsTo(models.workcell);
+            }
+        }
     });
-}
+    return Machine;
+};
