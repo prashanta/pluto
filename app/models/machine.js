@@ -1,4 +1,6 @@
-module.exports = function(sequelize, DataTypes) {
+/*jshint esversion: 6 */
+
+export default function(sequelize, DataTypes) {
     var Machine = sequelize.define("machine", {
         workcellId: DataTypes.INTEGER,
         code: DataTypes.STRING(50),
@@ -13,9 +15,9 @@ module.exports = function(sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                Machine.belongsTo(models.workcell);
+                models.machine.belongsTo(models.workcell);
             }
         }
     });
     return Machine;
-};
+}

@@ -1,22 +1,21 @@
 /*jshint esversion: 6 */
 
 export default function(sequelize, DataTypes) {
-    var Workcell = sequelize.define("workcell", {
+    var Customer = sequelize.define("customer", {
         companyId: DataTypes.INTEGER,
         code: DataTypes.STRING(50),
         name: DataTypes.STRING(200),
-        description: DataTypes.STRING(200),
-        status: DataTypes.ENUM('active', 'inactive')
+        status: DataTypes.INTEGER
     },
     {
         timestamps: true,
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                models.workcell.belongsTo(models.company);
-                models.workcell.hasMany(models.machine);
+                models.customer.belongsTo(models.company);
+                models.customer.hasMany(models.part);
             }
         }
     });
-    return Workcell;
+    return Customer;
 }

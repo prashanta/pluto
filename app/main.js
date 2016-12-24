@@ -1,57 +1,37 @@
 /*jshint esversion: 6 */
 
-import path from 'path';
-import express from 'express';
-import bodyParser from 'body-parser';
-import favicon from 'serve-favicon';
-import {api, defaultRouter} from './routes';
+import Hapi from 'hapi';
+import config from './config';
+import Inert from 'inert';
+import Routes from './routes';
+import pjson from '../package.json';
 
-export default function main (app, config) {
-   var env = process.env.NODE_ENV || 'development';
-   app.locals.ENV = env;
-   app.locals.ENV_DEVELOPMENT = env == 'development';
+const server = new Hapi.Server();
 
-   app.set('views', path.join(config.root, 'app', 'views'));
-   app.engine('handlebars', exphbs({
-      defaultLayout: 'main',
-      layoutsDir: path.join('app', 'views', 'layouts'),
-      partialsDir: path.join('app', 'views', 'partials')
-   }));
-   app.set('view engine', 'handlebars');
+console.log(`Starting application ... ${config.name} - ${config.version}`);
 
-   app.use(favicon(config.root + '/public/img/favicon.ico'));
-   app.use(morgan('dev'));
-   app.use(bodyParser.json());
-   app.use(bodyParser.urlencoded({extended: true}));
-   app.use(express.static(config.root + '/public'));
+server.connection({host:'localhost', port: config.port});
 
-   // Register all routes in app/routes folder
-   api(app);
-   defaultRouter(app);
+server.start((err)=>{
+    if(err){
+        throw err;
+    }
+    console.log(`Server running at ${server.info.uri}`);
+});
 
-   app.use(function (req, res, next) {
-      var err = new Error('Not found : ' + req.path);
-      err.status = 404;
-      next(err);
-   });
+Routes(server);
 
-   if(app.get('env') === 'development'){
-      app.use(function (err, req, res, next) {
-         res.status(err.status || 500);
-         res.render('error', {
-            message: err.message,
-            error: err,
-            title: 'error'
-         });
-      });
-   }
+server.register(Inert, err=>{
+    if(err){
+        throw err;
+    }
 
-   app.use(function (err, req, res, next) {
-      res.status(err.status || 500);
-      res.render('error', {
-         message: err.message,
-         error: {},
-         title: 'error'
-      });
-   });
-}
+    server.route({
+        method: 'GET',
+        path: '/',
+        handler: function (request, reply) {
+            console.log("asdfasdf");
+            reply.file('app/public/index.html');
+        }
+    });
+});

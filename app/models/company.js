@@ -1,4 +1,7 @@
-module.exports = function(sequelize, DataTypes) {
+/*jshint esversion: 6 */
+
+export default function(sequelize, DataTypes) {
+
     var Company = sequelize.define("company", {
         name: DataTypes.STRING(200),
         address1: DataTypes.STRING(200),
@@ -14,11 +17,10 @@ module.exports = function(sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                console.log("flag2");
-                Company.hasMany(models.workcell);
+                models.company.hasMany(models.workcell);
             }
         }
     });
 
     return Company;
-};
+}

@@ -1,12 +1,14 @@
-var fs        = require("fs");
-var path      = require("path");
-var Sequelize = require("sequelize");
-var config    = require("../config");
+/*jshint esversion: 6 */
+
+import fs from 'fs';
+import path from 'path';
+import Sequelize from 'sequelize';
+import config    from '../config';
 
 if (process.env.DATABASE_URL) {
     var sequelize = new Sequelize(process.env.DATABASE_URL);
 } else {
-    var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db.config);
+    var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db.options);
 }
 var db = {};
 
@@ -22,7 +24,6 @@ fs.readdirSync(__dirname)
 
 // Make associations
 Object.keys(db).forEach(function(modelName) {
-    console.log(typeof db[modelName]);
     if ("associate" in db[modelName]) {
         db[modelName].associate(db);
     }
@@ -31,4 +32,4 @@ Object.keys(db).forEach(function(modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-module.exports = db;
+export default db;

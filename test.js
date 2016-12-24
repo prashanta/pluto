@@ -1,11 +1,14 @@
 
+/*jshint esversion: 6 */
+
 //var Sequelize = require("sequelize");
 //var config = require("./app/config");
 //var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db.config);
 
 //var Company = sequelize.import(__dirname + "/app/models/company");
+import models from './app/models';
 
-var models  = require('./app/models');
+//var models  = require('./app/models');
 // Company.create({
 //     company_name: 'Applica'
 // }).then(function() {
@@ -21,9 +24,14 @@ var models  = require('./app/models');
 // Company.hasMany(Workcell);
 //
 //
- models.company.findAll({ include: [ {model: models.workcell, include: [models.machine]} ] }).then(function(result) {
+    models.company.findAll({ include: [ {model: models.workcell, include: [models.machine]} ] }).then(function(result) {
      console.log(JSON.stringify(result));
- });
+    });
+
+ // models.customer.create({code: 'AXASX', name: 'AXDDADXXXSDS'})
+ // .then(function(axx){
+ //     console.log(axx.getDataValue('code'));
+ // });
 
 // Workcell.create({
 //     company_id: 1,

@@ -1,53 +1,57 @@
-var path = require('path');
+/*jshint esversion: 6 */
+
+import path from 'path';
+import pkg from '../package.json';
 
 var rootPath = path.normalize(__dirname + '/..');
 var env = process.env.NODE_ENV || 'development';
 
 var _config = {
-
-  development: {
-    root: rootPath,
-    app: {
-      name: 'pluto'
+    development: {
+        port: 3000, // server port
+        logLevel: 'log',
+        db: {
+            username: "root",
+            password: "root",
+            database: "hydra",
+            options:{
+                host: "127.0.0.1",
+                port: 3306,
+                dialect: "mysql",
+                pool: {
+                    max: 5,
+                    min: 0,
+                    idle: 10000
+                }
+            }
+        }
     },
-    port: 3000,
-    db: {
-        username: "root",
-        password: "root",
-        database: "hydra",
-        config:{
-            host: "127.0.0.1",
-            dialect: "mysql",
-            pool: {
-                max: 5,
-                min: 0,
-                idle: 10000
+
+    production: {
+        port: 80,
+        logLevel: 'warn',
+        db: {
+            username: "root",
+            password: "root",
+            database: "hydra",
+            options:{
+                host: "127.0.0.1",
+                port: 3306,
+                dialect: "mysql",
+                pool: {
+                    max: 5,
+                    min: 0,
+                    idle: 10000
+                }
             }
         }
     }
-  },
-
-  production: {
-    root: rootPath,
-    app: {
-      name: 'pluto'
-    },
-    port: 80,
-    db: {
-        username: "root",
-        password: "root",
-        database: "hydra",
-        config:{
-            host: "127.0.0.1",
-            dialect: "mysql",
-            pool: {
-                max: 5,
-                min: 0,
-                idle: 10000
-            }
-        }
-    }
-  }
 };
 
-module.exports =  _config[env];
+var config = _config[env];
+
+config.name = pkg.name;
+config.version = pkg.version;
+config.root = rootPath;
+
+export default config;
