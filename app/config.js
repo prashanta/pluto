@@ -49,6 +49,7 @@ var _config = {
 };
 
 var config = _config[env];
+console.log("Loading configurations for:", env);
 
 config.name = pkg.name;
 config.version = pkg.version;

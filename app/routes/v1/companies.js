@@ -1,15 +1,17 @@
 /*jshint esversion: 6 */
 
 import Joi from 'joi';
-import Company from '../../service/company';
-import User from '../../service/user';
+import CompanyService from '../../service/company';
+import UserService from '../../service/user';
 import tracer from 'tracer';
+import config from '../../config';
 
-var logger = tracer.console({level:'warn'});
-var comp = new Company();
+var logger = tracer.console({level:config.logLevel});
+var comp = new CompanyService();
 export default [
     // Get list of companies
-    {   method: 'GET',
+    {
+        method: 'GET',
         path: '/api/v1/companies',
         handler: function(request, reply){
             comp.getCompanies()
@@ -18,12 +20,25 @@ export default [
             });
         }
     },
+    // Get list of users for a company
+    {
+        method: 'GET',
+        path: '/api/v1/companies/{id}/users',
+        handler: function(request, reply){
+            var user = new UserService();
+            user.getUsersForCompany(request.params.id)
+            .then(function(result){
+                reply(result);
+            });
+        }
+    },
     // Add new company - first add company then add admin user
-    {   method: 'POST',
+    {
+        method: 'POST',
         path: '/api/v1/companies',
         handler: function(request, reply){
             var data = request.payload;
-            var user = new User();
+            var user = new UserService();
             comp.addCompany(data)
             .then(function(result){
                 data.companyId = result.getDataValue('id');

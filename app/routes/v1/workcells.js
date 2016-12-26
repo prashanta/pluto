@@ -1,5 +1,10 @@
 /*jshint esversion: 6 */
 
+import Joi from 'joi';
+import tracer from 'tracer';
+import config from '../../config';
+
+var logger = tracer.console({level:config.logLevel});
 var version = 'v1';
 
 export default [

@@ -9,7 +9,6 @@ var logger = tracer.console();
 
 export default class Company{
     constructor(){
-        logger.log("Company constructor");
     }
 
     // Add new company
