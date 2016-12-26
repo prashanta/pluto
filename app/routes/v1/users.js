@@ -1,11 +1,12 @@
 /*jshint esversion: 6 */
 
-import getCompanies from '../../service/companies';
+import getCompanies from '../../service/company';
 import tracer from 'tracer';
 
 var logger = tracer.console({level:'warn'});
 
-var users = [
+export default [
+    // Get all users
     {   method: 'GET',
         path: '/api/v1/users',
         handler: function(request, reply){
@@ -16,6 +17,7 @@ var users = [
             });
         }
     },
+    // Create new user
     {   method: 'POST',
         path: '/api/v1/users',
         handler: function(request, reply){
@@ -23,5 +25,3 @@ var users = [
         }
     }
 ];
-
-export default users;

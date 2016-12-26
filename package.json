@@ -1,6 +1,6 @@
 {
   "name": "pluto",
-  "version": "1.0.0",
+  "version": "1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,8 +12,12 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.4.7",
+    "good": "^7.1.0",
+    "good-console": "^6.2.0",
+    "gulp-eslint": "^3.0.1",
     "hapi": "^16.0.2",
     "inert": "^4.0.4",
+    "joi": "^10.1.0",
     "mysql": "^2.12.0",
     "sequelize": "^3.27.0",
     "tracer": "^0.8.7"

@@ -5,8 +5,9 @@ import config from './config';
 import Inert from 'inert';
 import Routes from './routes';
 import pjson from '../package.json';
+import Good from 'good';
 
-const server = new Hapi.Server();
+const server = new Hapi.Server({debug:{request:['error']}});
 
 console.log(`Starting application ... ${config.name} - ${config.version}`);
 
@@ -22,15 +23,12 @@ server.start((err)=>{
 Routes(server);
 
 server.register(Inert, err=>{
-    if(err){
+    if(err)
         throw err;
-    }
-
     server.route({
         method: 'GET',
         path: '/',
         handler: function (request, reply) {
-            console.log("asdfasdf");
             reply.file('app/public/index.html');
         }
     });

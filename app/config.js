@@ -13,7 +13,7 @@ var _config = {
         db: {
             username: "root",
             password: "root",
-            database: "hydra",
+            database: "charon",
             options:{
                 host: "127.0.0.1",
                 port: 3306,
@@ -33,7 +33,7 @@ var _config = {
         db: {
             username: "root",
             password: "root",
-            database: "hydra",
+            database: "charon",
             options:{
                 host: "127.0.0.1",
                 port: 3306,

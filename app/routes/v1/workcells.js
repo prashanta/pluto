@@ -2,21 +2,19 @@
 
 var version = 'v1';
 
-var workcell = [
+export default [
 
     {   method: 'GET',
-        path: `/api/${version}/workcell`,
+        path: '/api/v1/workcell',
         handler: function(request, reply){
             reply("handle stuffs here");
         }
     },
 
     {   method: 'GET',
-        path: `/api/${version}/workcell/{id}`,
+        path: '/api/v1/workcell/{id}',
         handler: function(request, reply){
             reply("get workcell information for: " + request.params.id);
         }
     }
 ];
-
-export default workcell;
