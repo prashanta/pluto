@@ -27,6 +27,9 @@ export default class Company{
             })
             .then(function(comp){
                 resolve(comp);
+            })
+            .catch(function(){
+                reject('Could not crate account');
             });
         });
     }
@@ -37,6 +40,9 @@ export default class Company{
             models.company.findAll({attributes: ['name']})
             .then(function(result) {
                 resolve(result);
+            })
+            .catch(function(){
+                reject();
             });
         });
     }

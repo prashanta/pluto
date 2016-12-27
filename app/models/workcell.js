@@ -6,7 +6,7 @@ export default function(sequelize, DataTypes) {
         code: DataTypes.STRING(50),
         name: DataTypes.STRING(200),
         description: DataTypes.STRING(200),
-        status: DataTypes.ENUM('active', 'inactive')
+        active: DataTypes.BOOLEAN
     },
     {
         timestamps: true,

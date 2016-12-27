@@ -5,11 +5,11 @@ export default function(sequelize, DataTypes) {
         companyId: DataTypes.INTEGER,
         uid: {type: DataTypes.UUID, defaultValue: DataTypes.UUIDV1},
         firstName: DataTypes.STRING(100),
-        middleName: DataTypes.STRING(100),
         lastName: DataTypes.STRING(100),
         email: DataTypes.STRING(100),
         phone: DataTypes.STRING(100),
-        type: DataTypes.ENUM('active', 'inactive')
+        type: DataTypes.ENUM('admin', 'user'),
+        active: DataTypes.BOOLEAN
     },
     {
         timestamps: true,

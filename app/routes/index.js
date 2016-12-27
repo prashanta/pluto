@@ -31,5 +31,6 @@ console.log('ADDING ROUTES: ');
             console.log(`${api.method} \t ${api.path}`);
             server.route(api);
         });
+        console.log('\n');
     });
 }

@@ -8,7 +8,8 @@ export default function(sequelize, DataTypes) {
         model: DataTypes.STRING(100),
         manufacturer: DataTypes.STRING(100),
         description: DataTypes.STRING(2000),
-        type: DataTypes.STRING(200)
+        type: DataTypes.STRING(200),
+        active: DataTypes.BOOLEAN
     },
     {
         timestamps: true,

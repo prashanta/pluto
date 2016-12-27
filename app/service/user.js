@@ -9,29 +9,43 @@ var logger = tracer.console();
 
 export default class User{
     constructor(){
-        logger.log("User constructor");
+
+    }
+
+    // Add new user
+    addUser(data, type = 'user'){
+        return new Promise(function(resolve, reject){
+            this.isUserExist(data.email)
+            .then(function(result){
+                models.user.create({
+                    companyId: data.companyId,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    phone: data.phone,
+                    type: type
+                })
+                .then(function(result){
+                    resolve("User added");
+                })
+                .catch(function(){
+                    reject('Could not add user');
+                });
+            })
+            .catch(function(error){
+                reject(error);
+            });
+
+        }.bind(this));
     }
 
     // Add new user as administrator
     addAdmin(data){
-        return new Promise(function(resolve, reject){
-            models.user.create({
-                companyId: data.companyId,
-                firstName: data.firstName,
-                middleName: data.middleName? data.middleName : null,
-                lastName: data.lastName,
-                email: data.email,
-                phone: data.phone,
-                type: 'admin'
-            })
-            .then(function(result){
-                resolve();
-            });
-        });
+        return this.addUser(data, 'admin');
     }
 
-    // Get list of users
-    getUsers(uid){
+    // Get list of peers
+    getPeers(uid){
         return new Promise(function(resolve,reject){
             models.user.findOne({attributes:['companyId'], where: {uid: uid}})
             .then(function(result){
@@ -39,13 +53,16 @@ export default class User{
                     reject();
                 else{
                     models.user.findAll({
-                        attributes: ['email','uid','firstName','lastName'],
-                        where: {companyId: result.getDataValue('companyId')}
+                        attributes: ['email','uid','firstName','lastName','type'],
+                        where: {companyId: result.getDataValue('companyId'), active: 1}
                     })
                     .then(function(result){
                         resolve(result);
                     });
                 }
+            })
+            .catch(function(){
+                reject('Somethg went wrong');
             });
         });
     }
@@ -54,11 +71,41 @@ export default class User{
     getUsersForCompany(id){
         return new Promise(function(resolve,reject){
             models.user.findAll({
-                attributes: ['email','uid','firstName','lastName'],
-                where: {companyId: id}
+                attributes: ['email','uid','firstName','lastName','type'],
+                where: {companyId: id, active: 1}
             })
             .then(function(result){
                 resolve(result);
+            })
+            .catch(function(){
+                reject('something went wrong');
+            });
+        });
+    }
+
+    isUserAdmin(uid){
+        return new Promise(function(resolve, reject) {
+            models.user.findOne({attributes: ['type'], where: {uid: uid, active: 1}})
+            .then(function(result){
+                if(result.getDataValue('type') == 'admin')
+                    resolve(1);
+                else
+                    reject(0);
+            });
+        });
+    }
+
+    isUserExist(userEmail){
+        return new Promise(function(resolve, reject) {
+            models.user.findAndCountAll({where: {email: userEmail}})
+            .then(function(result){
+                if(result.count > 0)
+                    reject("User already exist");
+                else
+                    resolve();
+            })
+            .catch(function(error){
+                reject(error);
             });
         });
     }
