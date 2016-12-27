@@ -1,20 +1,20 @@
-### Pluto
+## Pluto
 
-## What does it do?
+A RESTful server.
 
-* REST API server
+### Quick Start
 
-## Quick Start
-
-To install:
-
+Install:
 ```
-#!shell
 npm install
 ```
 
-To run in dev mode:
+Run in dev mode:
 ```
-#!shell
-gulp dev
+gulp
+```
+
+Build:
+```
+gulp build
 ```

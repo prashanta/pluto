@@ -7,27 +7,30 @@ import tracer from 'tracer';
 
 var logger = tracer.console();
 
-export default class Workcell{
+export default class Machine{
     constructor(){
 
     }
 
-    // Add new workcell to a company
-    addWorkcell(data){
+    // Add new machine to a workcell
+    addMachine(data){
         return new Promise(function(resolve, reject){
-            this.isWorkcellExist(data.companyId, data.code)
+            this.isMachineExist(data.workCellId, data.code)
             .then(function(result){
-                models.workcell.create({
-                    companyId: data.companyId,
+                models.machine.create({
+                    workcellId: data.workcellId,
                     code: data.code,
-                    name: data.name,
-                    description: data.description
+                    serialNumber: data.serialNumber? data.serialNumber : null,
+                    model: data.model,
+                    manufacturer: data.manufacturer? data.manufacturer : null,
+                    description: data.description? data.description : null,
+                    type: data.type? data.type : null
                 })
                 .then(function(result){
-                    resolve("Workcell added");
+                    resolve("Machine added");
                 })
                 .catch(function(){
-                    reject('Could not add workcell');
+                    reject('Could not add machine');
                 });
             })
             .catch(function(error){
@@ -37,12 +40,30 @@ export default class Workcell{
         }.bind(this));
     }
 
-    // Get workcells
-    getWorkcells(companyId){
+    // Get workcell machines
+    getWorkcellMachines(workcellId){
+        return new Promise(function(resolve,reject){
+            models.machine.findAll({
+                attributes: ['code','serialNumber','model','manufacturer','description','type'],
+                where: {workcellId: workcellId, active: 1}
+            })
+            .then(function(result){
+                resolve(result);
+            })
+            .catch(function(error){
+                logger.log(error);
+                reject('something went wrong');
+            });
+        });
+    }
+
+    // Get company machines
+    getCompanyMachines(companyId){
         return new Promise(function(resolve,reject){
             models.workcell.findAll({
                 attributes: ['id','code','name','description'],
-                where: {companyId: companyId, active: 1}
+                where: {companyId: companyId, active: 1},
+                include: [{model: models.machine, attributes:['id','code','serialNumber','model','manufacturer','description','type']}]
             })
             .then(function(result){
                 resolve(result);
@@ -72,12 +93,12 @@ export default class Workcell{
     }
 
     // Check if workcell exists
-    isWorkcellExist(companyId, code){
+    isMachineExist(workcellId, code){
         return new Promise(function(resolve, reject) {
-            models.workcell.findAndCountAll({where: {code: code, companyId: companyId}})
+            models.machine.findAndCountAll({where: {code: code, workcellId: workcellId}})
             .then(function(result){
                 if(result.count > 0)
-                    reject("Workcell already exist");
+                    reject("Machine already exist");
                 else
                     resolve();
             })
