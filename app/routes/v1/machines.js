@@ -22,6 +22,11 @@ export default [
             .catch(function(error){
                 reply(error);
             });
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     },
     // Get machines in all workcells
@@ -37,6 +42,11 @@ export default [
             .catch(function(error){
                 reply(error);
             });
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     },
     // Add machine to workcell
@@ -64,7 +74,10 @@ export default [
                     description: Joi.string().trim().max(100),
                     type: Joi.string().trim().max(100)
                 }
+            },
+            auth:{
+                strategy: 'jwt'
             }
-        }
+        },
     }
 ];

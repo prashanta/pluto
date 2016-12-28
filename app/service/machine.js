@@ -15,7 +15,7 @@ export default class Machine{
     // Add new machine to a workcell
     addMachine(data){
         return new Promise(function(resolve, reject){
-            this.isMachineExist(data.workCellId, data.code)
+            this.isMachineExist(data.workcellId, data.code)
             .then(function(result){
                 models.machine.create({
                     workcellId: data.workcellId,

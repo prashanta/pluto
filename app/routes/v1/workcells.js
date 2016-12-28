@@ -22,6 +22,11 @@ export default [
             .catch(function(error){
                 reply(error);
             });
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     },
     // Add new workcell to a company
@@ -46,6 +51,9 @@ export default [
                     name: Joi.string().trim().max(100).required(),
                     description: Joi.string().trim().max(100).required()
                 }
+            },
+            auth:{
+                strategy: 'jwt'
             }
         }
     },
@@ -59,6 +67,11 @@ export default [
             .then(function(result){
                 reply(result);
             });
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     }
 

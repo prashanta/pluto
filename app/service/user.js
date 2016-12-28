@@ -4,8 +4,10 @@
 import models from '../models';
 import Promise from 'bluebird';
 import tracer from 'tracer';
+import bcrypt from 'bcrypt';
+import config from '../config';
 
-var logger = tracer.console();
+var logger = tracer.console({level:config.logLevel});
 
 export default class User{
     constructor(){
@@ -15,21 +17,29 @@ export default class User{
     // Add new user
     addUser(data, type = 'user'){
         return new Promise(function(resolve, reject){
+            // Check if user already exits
             this.isUserExist(data.email)
             .then(function(result){
-                models.user.create({
-                    companyId: data.companyId,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    email: data.email,
-                    phone: data.phone,
-                    type: type
-                })
-                .then(function(result){
-                    resolve("User added");
-                })
-                .catch(function(){
-                    reject('Could not add user');
+                // bcrypt password
+                bcrypt.hash(data.password, 10)
+                .then(function(hash){
+                    logger.log("genhash: " + hash);
+                    // Create user in database
+                    models.user.create({
+                        companyId: data.companyId,
+                        passwordHash: hash,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        email: data.email,
+                        phone: data.phone,
+                        type: type
+                    })
+                    .then(function(result){
+                        resolve("User added");
+                    })
+                    .catch(function(){
+                        reject('Could not add user');
+                    });
                 });
             })
             .catch(function(error){
@@ -50,7 +60,7 @@ export default class User{
             models.user.findOne({attributes:['companyId'], where: {uid: uid}})
             .then(function(result){
                 if(result === null)
-                    reject();
+                reject();
                 else{
                     models.user.findAll({
                         attributes: ['email','uid','firstName','lastName','type'],
@@ -83,14 +93,30 @@ export default class User{
         });
     }
 
+    getPasswordHash(username){
+        return new Promise(function(resolve,reject){
+            models.user.findOne({
+                attributes: ['passwordHash'],
+                where: {email: username}
+            })
+            .then(function(result){
+                logger.log(result.getDataValue('passwordHash'));
+                resolve(result.getDataValue('passwordHash'));
+            })
+            .catch(function(error){
+                reject("Something went wrong");
+            });
+        });
+    }
+
     isUserAdmin(uid){
         return new Promise(function(resolve, reject) {
             models.user.findOne({attributes: ['type'], where: {uid: uid, active: 1}})
             .then(function(result){
                 if(result.getDataValue('type') == 'admin')
-                    resolve(1);
+                resolve(1);
                 else
-                    reject(0);
+                reject(0);
             });
         });
     }
@@ -100,9 +126,9 @@ export default class User{
             models.user.findAndCountAll({where: {email: userEmail}})
             .then(function(result){
                 if(result.count > 0)
-                    reject("User already exist");
+                reject("User already exist");
                 else
-                    resolve();
+                resolve();
             })
             .catch(function(error){
                 reject(error);

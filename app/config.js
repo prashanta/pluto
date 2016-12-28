@@ -10,6 +10,7 @@ var _config = {
     development: {
         port: 3000, // server port
         logLevel: 'log',
+        tsecret: 'hotsauce',
         db: {
             username: "root",
             password: "root",
@@ -30,6 +31,7 @@ var _config = {
     production: {
         port: 80,
         logLevel: 'warn',
+        tsecret: process.env.JWT_SECRET,
         db: {
             username: "root",
             password: "root",

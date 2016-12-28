@@ -22,6 +22,11 @@ export default [
             .catch(function(){
                 reply(Boom.serverUnavailable('something went wrong!'));
             });
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     },
     // Add new company - first add company then add admin user
@@ -56,6 +61,7 @@ export default [
                     lastName: Joi.string().trim().max(100).required(),
                     email: Joi.string().trim().email().max(100).required(),
                     phone: Joi.string().trim().max(100).required(),
+                    password: Joi.string().trim().min(8).required(),
                     // Company data validation
                     companyName: Joi.string().trim().max(200).required(),
                     address1: Joi.string().trim().max(200).required(),

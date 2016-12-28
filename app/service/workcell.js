@@ -62,6 +62,7 @@ export default class Workcell{
                 where: {id: id, companyId: companyId, active: 1}
             })
             .then(function(result){
+                logger.log(result);
                 resolve(result);
             })
             .catch(function(error){

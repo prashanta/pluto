@@ -33,6 +33,11 @@ export default [
             });
 
 
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     },
     // Get list of users for a company
@@ -48,6 +53,11 @@ export default [
             .catch(function(error){
                 reply(Boom.serverUnavailable(error));
             });
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
         }
     },
     // Add new user
@@ -72,8 +82,12 @@ export default [
                     firstName: Joi.string().required(),
                     lastName: Joi.string().required(),
                     email: Joi.string().required(),
-                    phone: Joi.string().required()
+                    phone: Joi.string().required(),
+                    password: Joi.string().trim().min(8).required()
                 }
+            },
+            auth:{
+                strategy: 'jwt'
             }
         }
     }
