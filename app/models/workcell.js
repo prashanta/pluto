@@ -2,7 +2,7 @@
 
 export default function(sequelize, DataTypes) {
     var Workcell = sequelize.define("workcell", {
-        companyId: DataTypes.INTEGER,
+        tenantId: DataTypes.INTEGER,
         code: DataTypes.STRING(50),
         name: DataTypes.STRING(200),
         description: DataTypes.STRING(200),
@@ -13,7 +13,7 @@ export default function(sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                models.workcell.belongsTo(models.company);
+                models.workcell.belongsTo(models.tenant);
                 models.workcell.hasMany(models.machine);
             }
         }

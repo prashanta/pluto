@@ -28,9 +28,18 @@ server.register([Inert, jwtauth], err=>{
     if(err)
         throw err;
 
+    var validate = function (request, decodedToken, callback) {
+        var error, credentials = decodedToken || null;
+        if (!credentials) {
+            return callback(error, false, credentials);
+        }
+        return callback(error, true, credentials);
+    };
+
     server.auth.strategy('jwt', 'jwt',
         {
             key: config.tsecret,
+            validateFunc: validate,
             verifyOptions: {
                 algorithms: ['HS256']
             }

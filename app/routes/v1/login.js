@@ -3,6 +3,7 @@
 import Joi from 'joi';
 import Boom from 'boom';
 import AuthService from '../../service/authenticate';
+import UserService from '../../service/user';
 import tracer from 'tracer';
 import config from '../../config';
 import _ from 'underscore';
@@ -18,10 +19,15 @@ export default [
             var auth = new AuthService();
             auth.login(request.payload)
             .then(function(result){
-                reply({token: result});
+                if(result){
+                    reply(result);
+                }
+                else{
+                    reply(Boom.unauthorized('Invalid Username or Password'));
+                }
             })
-            .catch(function(error){
-                reply(error);
+            .catch(function(){
+                reply(Boom.badImplementation());
             });
         },
         config:{

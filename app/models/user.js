@@ -2,8 +2,8 @@
 
 export default function(sequelize, DataTypes) {
     var User = sequelize.define("user", {
-        companyId: DataTypes.INTEGER,
-        uid: {type: DataTypes.UUID, defaultValue: DataTypes.UUIDV1},
+        tenantId: DataTypes.INTEGER,
+        uid: {type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4},
         passwordHash: {type: DataTypes.STRING(300)},
         firstName: DataTypes.STRING(100),
         lastName: DataTypes.STRING(100),
@@ -17,7 +17,7 @@ export default function(sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                models.user.belongsTo(models.company);
+                models.user.belongsTo(models.tenant);
             }
         }
     });

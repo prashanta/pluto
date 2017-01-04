@@ -15,54 +15,65 @@ export default class Workcell{
     // Add new workcell to a company
     addWorkcell(data){
         return new Promise(function(resolve, reject){
-            this.isWorkcellExist(data.companyId, data.code)
-            .then(function(result){
-                models.workcell.create({
-                    companyId: data.companyId,
-                    code: data.code,
-                    name: data.name,
-                    description: data.description
-                })
-                .then(function(result){
-                    resolve("Workcell added");
-                })
-                .catch(function(){
-                    reject('Could not add workcell');
-                });
+            models.workcell.create({
+                tenantId: data.tenantId,
+                code: data.code,
+                name: data.name,
+                description: data.description
             })
-            .catch(function(error){
-                reject(error);
+            .then(function(result){
+                resolve({message: "Workcell added"});
+            })
+            .catch(function(){
+                reject();
             });
-
-        }.bind(this));
+        });
     }
 
     // Get workcells
-    getWorkcells(companyId){
+    getWorkcells(tenantId){
         return new Promise(function(resolve,reject){
             models.workcell.findAll({
                 attributes: ['id','code','name','description'],
-                where: {companyId: companyId, active: 1}
+                where: {tenantId: tenantId, active: 1}
             })
             .then(function(result){
                 resolve(result);
             })
+            .catch(function(){
+                reject();
+            });
+        });
+    }
+
+    // Get workcell's tenantId
+    getTenantId(id){
+        return new Promise(function(resolve,reject){
+            models.workcell.findOne({
+                where:{id: id},
+                attributes:['tenantId']
+            })
+            .then(function(result){
+                if(result)
+                    resolve(result.get('tenantId'));
+                else
+                    resolve(null);
+            })
             .catch(function(error){
-                logger.log(error);
-                reject('something went wrong');
+                logger.error(error);
+                reject();
             });
         });
     }
 
     // Get workcell information
-    getWorkcellInfo(companyId, id){
+    getWorkcellInfo(tenantId, id){
         return new Promise(function(resolve,reject){
             models.workcell.findOne({
                 attributes: ['code','name','description'],
-                where: {id: id, companyId: companyId, active: 1}
+                where: {id: id, tenantId: tenantId, active: 1}
             })
             .then(function(result){
-                logger.log(result);
                 resolve(result);
             })
             .catch(function(error){
@@ -73,17 +84,17 @@ export default class Workcell{
     }
 
     // Check if workcell exists
-    isWorkcellExist(companyId, code){
+    isWorkcellExist(tenantId, code){
         return new Promise(function(resolve, reject) {
-            models.workcell.findAndCountAll({where: {code: code, companyId: companyId}})
+            models.workcell.findAndCountAll({where: {code: code, tenantId: tenantId}})
             .then(function(result){
                 if(result.count > 0)
-                    reject("Workcell already exist");
+                    resolve(1);
                 else
-                    resolve();
+                    resolve(0);
             })
-            .catch(function(error){
-                reject(error);
+            .catch(function(){
+                reject();
             });
         });
     }

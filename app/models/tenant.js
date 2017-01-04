@@ -2,7 +2,7 @@
 
 export default function(sequelize, DataTypes) {
 
-    var Company = sequelize.define("company", {
+    var Tenant = sequelize.define("tenant", {
         name: DataTypes.STRING(200),
         address1: DataTypes.STRING(200),
         address2: DataTypes.STRING(200),
@@ -17,10 +17,11 @@ export default function(sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                models.company.hasMany(models.workcell);
+                models.tenant.hasMany(models.workcell);
+                models.tenant.hasMany(models.user);
             }
         }
     });
 
-    return Company;
+    return Tenant;
 }

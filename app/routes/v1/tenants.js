@@ -2,55 +2,68 @@
 
 import Joi from 'joi';
 import Boom from 'boom';
-import CompanyService from '../../service/company';
+import TenantService from '../../service/tenant';
 import UserService from '../../service/user';
 import tracer from 'tracer';
 import config from '../../config';
 
 var logger = tracer.console({level:config.logLevel});
 export default [
-    // Get list of companies
+    // Get list of tenants
     {
         method: 'GET',
-        path: '/api/v1/companies',
+        path: '/api/v1/tenants',
         handler: function(request, reply){
-            var comp = new CompanyService();
-            comp.getCompanies()
+            var tenant = new TenantService();
+            tenant.getTenants()
             .then(function(result){
                 reply(result);
             })
             .catch(function(){
-                reply(Boom.serverUnavailable('something went wrong!'));
+                reply(Boom.badImplementation());
             });
         },
         config:{
             auth:{
-                strategy: 'jwt'
+                strategy: 'jwt',
+                scope: ['master','!user','!admin']
             }
         }
     },
-    // Add new company - first add company then add admin user
+    // Add new tenant - first add tenant then add admin user
     {
         method: 'POST',
-        path: '/api/v1/companies',
+        path: '/api/v1/tenants',
         handler: function(request, reply){
             var data = request.payload;
             var user = new UserService();
-            var comp = new CompanyService();
+            var tenant = new TenantService();
 
-            comp.addCompany(data)
+            user.isUserExist(data.email)
             .then(function(result){
-                data.companyId = result.getDataValue('id');
-                user.addAdmin(data)
-                .then(function(result){
-                    reply("Company Added");
-                })
-                .catch(function(){
-                    reject('Could not crate account');
-                });
+                logger.log(result);
+                if(result === 0){
+                    tenant.addTenant(data)
+                    .then(function(result){
+                        data.tenantId = result.getDataValue('id');
+                        user.addAdmin(data)
+                        .then(function(result){
+                            reply("Tenant Added");
+                        })
+                        .catch(function(){
+                            reject(Boom.badImplementation());
+                        });
+                    })
+                    .catch(function(error){
+                        reply(Boom.badImplementation());
+                    });
+                }
+                else{
+                    reply(Boom.conflict('E-mail already exist.'));
+                }
             })
             .catch(function(error){
-                rely(Boom.serverUnavailable(error));
+                reply(Boom.badImplementation());
             });
         },
         config:{
@@ -62,8 +75,8 @@ export default [
                     email: Joi.string().trim().email().max(100).required(),
                     phone: Joi.string().trim().max(100).required(),
                     password: Joi.string().trim().min(8).required(),
-                    // Company data validation
-                    companyName: Joi.string().trim().max(200).required(),
+                    // Tenant data validation
+                    tenantName: Joi.string().trim().max(200).required(),
                     address1: Joi.string().trim().max(200).required(),
                     address2: Joi.string().trim().max(200).required(),
                     city: Joi.string().trim().max(100).required(),

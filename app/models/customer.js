@@ -12,7 +12,7 @@ export default function(sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             associate: function(models) {
-                models.customer.belongsTo(models.company);
+                models.customer.belongsTo(models.tenant);
                 models.customer.hasMany(models.part);
             }
         }

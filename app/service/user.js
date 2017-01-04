@@ -1,4 +1,3 @@
-
 /*jshint esversion: 6 */
 
 import models from '../models';
@@ -11,42 +10,35 @@ var logger = tracer.console({level:config.logLevel});
 
 export default class User{
     constructor(){
-
     }
 
     // Add new user
     addUser(data, type = 'user'){
         return new Promise(function(resolve, reject){
-            // Check if user already exits
-            this.isUserExist(data.email)
-            .then(function(result){
-                // bcrypt password
-                bcrypt.hash(data.password, 10)
-                .then(function(hash){
-                    logger.log("genhash: " + hash);
-                    // Create user in database
-                    models.user.create({
-                        companyId: data.companyId,
-                        passwordHash: hash,
-                        firstName: data.firstName,
-                        lastName: data.lastName,
-                        email: data.email,
-                        phone: data.phone,
-                        type: type
-                    })
-                    .then(function(result){
-                        resolve("User added");
-                    })
-                    .catch(function(){
-                        reject('Could not add user');
-                    });
+            // Hash password
+            bcrypt.hash(data.password, 10)
+            .then(function(hash){
+                // Create user in database
+                models.user.create({
+                    tenantId: data.tenantId,
+                    passwordHash: hash,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    phone: data.phone,
+                    type: type
+                })
+                .then(function(result){
+                    resolve({message:'User created'});
+                })
+                .catch(function(){
+                    reject();
                 });
             })
-            .catch(function(error){
-                reject(error);
+            .catch(function(){
+                reject();
             });
-
-        }.bind(this));
+        });
     }
 
     // Add new user as administrator
@@ -57,32 +49,37 @@ export default class User{
     // Get list of peers
     getPeers(uid){
         return new Promise(function(resolve,reject){
-            models.user.findOne({attributes:['companyId'], where: {uid: uid}})
+            this.getTenantId(uid)
             .then(function(result){
+                logger.log(result);
                 if(result === null)
-                reject();
+                    reject();
                 else{
                     models.user.findAll({
                         attributes: ['email','uid','firstName','lastName','type'],
-                        where: {companyId: result.getDataValue('companyId'), active: 1}
+                        where: {tenantId: result, active: 1}
                     })
                     .then(function(result){
                         resolve(result);
+                    })
+                    .catch(function(error){
+                        logger.error(error);
+                        reject();
                     });
                 }
             })
             .catch(function(){
-                reject('Somethg went wrong');
+                reject();
             });
-        });
+        }.bind(this));
     }
 
-    // Get list of users for a company
-    getUsersForCompany(id){
+    // Get list of users for a tenant
+    getUsersForTenant(id){
         return new Promise(function(resolve,reject){
             models.user.findAll({
                 attributes: ['email','uid','firstName','lastName','type'],
-                where: {companyId: id, active: 1}
+                where: {tenantId: id, active: 1}
             })
             .then(function(result){
                 resolve(result);
@@ -93,18 +90,54 @@ export default class User{
         });
     }
 
+    getUserDetail(username){
+        return new Promise(function(resolve,reject){
+            models.user.findOne({
+                where:{email: username},
+                attributes:['firstName', 'lastName', 'type']
+            })
+            .then(function(result){
+                resolve({
+                    name: `${result.get('firstName')} ${result.get('lastName')}`,
+                    type: result.get('type')
+                });
+            });
+        });
+    }
+
+    getTenantId(uid){
+        return new Promise(function(resolve,reject){
+            models.user.findOne({
+                where:{uid: uid},
+                attributes:['tenantId']
+            })
+            .then(function(result){
+                if(result)
+                    resolve(result.get('tenantId'));
+                else
+                    resolve(null);
+            })
+            .catch(function(error){
+                logger.error(error);
+                reject();
+            });
+        });
+    }
+
     getPasswordHash(username){
         return new Promise(function(resolve,reject){
             models.user.findOne({
-                attributes: ['passwordHash'],
+                attributes: ['passwordHash', 'uid', 'type'],
                 where: {email: username}
             })
             .then(function(result){
-                logger.log(result.getDataValue('passwordHash'));
-                resolve(result.getDataValue('passwordHash'));
+                if(result)
+                    resolve(result.get());
+                else
+                    resolve(null);
             })
             .catch(function(error){
-                reject("Something went wrong");
+                reject();
             });
         });
     }
@@ -114,24 +147,28 @@ export default class User{
             models.user.findOne({attributes: ['type'], where: {uid: uid, active: 1}})
             .then(function(result){
                 if(result.getDataValue('type') == 'admin')
-                resolve(1);
+                    resolve(1);
                 else
-                reject(0);
+                    reject(0);
+            })
+            .catch(function(error){
+                reject();
             });
         });
     }
 
-    isUserExist(userEmail){
+    isUserExist(email){
         return new Promise(function(resolve, reject) {
-            models.user.findAndCountAll({where: {email: userEmail}})
+            models.user.findAndCountAll({where: {email: email}})
             .then(function(result){
                 if(result.count > 0)
-                reject("User already exist");
+                    resolve(1);
                 else
-                resolve();
+                    resolve(0);
             })
             .catch(function(error){
-                reject(error);
+                logger.log(error);
+                reject();
             });
         });
     }

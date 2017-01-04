@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
 import config    from '../config';
+import util from 'util';
 
 if (process.env.DATABASE_URL) {
     var sequelize = new Sequelize(process.env.DATABASE_URL);

@@ -15,95 +15,89 @@ export default class Machine{
     // Add new machine to a workcell
     addMachine(data){
         return new Promise(function(resolve, reject){
-            this.isMachineExist(data.workcellId, data.code)
+            models.machine.create({
+                workcellId: data.workcellId,
+                code: data.code,
+                serialNumber: data.serialNumber? data.serialNumber : null,
+                model: data.model,
+                manufacturer: data.manufacturer? data.manufacturer : null,
+                description: data.description? data.description : null,
+                type: data.type? data.type : null
+            })
             .then(function(result){
-                models.machine.create({
-                    workcellId: data.workcellId,
-                    code: data.code,
-                    serialNumber: data.serialNumber? data.serialNumber : null,
-                    model: data.model,
-                    manufacturer: data.manufacturer? data.manufacturer : null,
-                    description: data.description? data.description : null,
-                    type: data.type? data.type : null
-                })
-                .then(function(result){
-                    resolve("Machine added");
-                })
-                .catch(function(){
-                    reject('Could not add machine');
-                });
+                resolve({message: 'Machine added'});
             })
             .catch(function(error){
-                reject(error);
+                if(error) logger.error(error);
+                reject();
             });
-
-        }.bind(this));
+        });
     }
 
     // Get workcell machines
-    getWorkcellMachines(workcellId){
+    getWorkcellMachines(tenantId, workcellId){
         return new Promise(function(resolve,reject){
             models.machine.findAll({
-                attributes: ['code','serialNumber','model','manufacturer','description','type'],
-                where: {workcellId: workcellId, active: 1}
+                attributes: ['umid','code','serialNumber','model','manufacturer','description','type'],                where: {workcellId: workcellId},
+                include: [{
+                    model: models.workcell,
+                    attributes : [],
+                    include:[{
+                        model: models.tenant,
+                        attributes : [],
+                        where: {id: tenantId}
+                    }]
+                }]
             })
             .then(function(result){
                 resolve(result);
             })
             .catch(function(error){
-                logger.log(error);
-                reject('something went wrong');
+                if(error) logger.error(error);
+                reject();
             });
         });
     }
 
     // Get company machines
-    getCompanyMachines(companyId){
+    getAllMachines(tenantId){
         return new Promise(function(resolve,reject){
             models.workcell.findAll({
                 attributes: ['id','code','name','description'],
-                where: {companyId: companyId, active: 1},
-                include: [{model: models.machine, attributes:['id','code','serialNumber','model','manufacturer','description','type']}]
+                where: {tenantId: tenantId, active: 1},
+                include: [{model: models.machine, attributes:['umid','code','serialNumber','model','manufacturer','description','type']}]
             })
             .then(function(result){
                 resolve(result);
             })
             .catch(function(error){
-                logger.log(error);
-                reject('something went wrong');
-            });
-        });
-    }
-
-    // Get workcell information
-    getWorkcellInfo(companyId, id){
-        return new Promise(function(resolve,reject){
-            models.workcell.findOne({
-                attributes: ['code','name','description'],
-                where: {id: id, companyId: companyId, active: 1}
-            })
-            .then(function(result){
-                resolve(result);
-            })
-            .catch(function(error){
-                logger.log(error);
-                reject('something went wrong');
+                if(error) logger.error(error);
+                reject();
             });
         });
     }
 
     // Check if workcell exists
-    isMachineExist(workcellId, code){
+    isMachineExist(tenantId, code){
         return new Promise(function(resolve, reject) {
-            models.machine.findAndCountAll({where: {code: code, workcellId: workcellId}})
+            models.machine.findAndCountAll({
+                where: {code: code},
+                include: [{
+                    model: models.workcell, attributes:[],
+                    include: [{
+                        model: models.tenant, attributes:[], where:{id: tenantId}
+                    }]
+                }]
+            })
             .then(function(result){
                 if(result.count > 0)
-                    reject("Machine already exist");
+                    resolve(1);
                 else
-                    resolve();
+                    resolve(0);
             })
             .catch(function(error){
-                reject(error);
+                if(error) logger.error(error);
+                reject();
             });
         });
     }

@@ -13,67 +13,60 @@ export default [
     // Get all peers
     {
         method: 'GET',
-        path: '/api/v1/users/{uid}/peers',
+        path: '/api/v1/users',
         handler: function(request, reply){
-            var uid = request.params.uid;
+            var uid = request.auth.credentials.uid;
             var user = new UserService();
 
-            user.isUserAdmin(uid)
-            .then(function(result){
-                user.getPeers(uid)
-                .then(function(result){
-                    reply(result);
-                })
-                .catch(function(error){
-                    reply(Boom.notFound());
-                });
-            })
-            .catch(function(error){
-                reply(Boom.forbidden('User does not have authorization'));
-            });
-
-
-        },
-        config:{
-            auth:{
-                strategy: 'jwt'
-            }
-        }
-    },
-    // Get list of users for a company
-    {
-        method: 'GET',
-        path: '/api/v1/companies/{id}/users',
-        handler: function(request, reply){
-            var user = new UserService();
-            user.getUsersForCompany(request.params.id)
+            user.getPeers(uid)
             .then(function(result){
                 reply(result);
             })
             .catch(function(error){
-                reply(Boom.serverUnavailable(error));
+                reply(Boom.badImplementation());
             });
+
         },
         config:{
             auth:{
-                strategy: 'jwt'
+                strategy: 'jwt',
+                scope: ['admin']
+
             }
         }
     },
+
     // Add new user
     {
         method: 'POST',
-        path: '/api/v1/companies/{id}/users',
+        path: '/api/v1/users',
         handler: function(request, reply){
-            var data = Object.assign(request.payload, {companyId: request.params.id});
+            var uid = request.auth.credentials.uid;
             var user = new UserService();
-
-            user.addUser(data)
+            user.isUserExist(request.payload.email)
             .then(function(result){
-                reply(result);
+                if(result === 0){
+                    user.getTenantId(uid)
+                    .then(function(result){
+                        var data = Object.assign(request.payload, {tenantId: result});
+                        user.addUser(data)
+                        .then(function(result){
+                            reply(result);
+                        })
+                        .catch(function(error){
+                            reply(Boom.badImplementation());
+                        });
+                    })
+                    .catch(function(error){
+                        reply(Boom.badImplementation());
+                    });
+                }
+                else{
+                    reply(Boom.conflict('E-mail already exist.'));
+                }
             })
             .catch(function(error){
-                reply(Boom.serverUnavailable(error));
+                reply(Boom.badImplementation());
             });
         },
         config:{
@@ -87,7 +80,8 @@ export default [
                 }
             },
             auth:{
-                strategy: 'jwt'
+                strategy: 'jwt',
+                scope: ['admin']
             }
         }
     }

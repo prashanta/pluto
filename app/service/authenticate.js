@@ -2,6 +2,7 @@
 /*jshint esversion: 6 */
 
 import models from '../models';
+import Boom from 'boom';
 import Promise from 'bluebird';
 import tracer from 'tracer';
 import config from '../config';
@@ -16,32 +17,49 @@ export default class Authenticate{
 
     }
 
-    // Add new user
+    // Login
     login(data){
         return new Promise(function(resolve, reject){
             var user = new UserService();
             user.getPasswordHash(data.username)
-                .then(function(hash){
-                logger.log(hash);
-                bcrypt.compare(data.password, hash)
-                .then(function(result){
-                    if(result)
-                        resolve(this.createToken(data.username));
-                    else
-                        reject("Login failed");
-                }.bind(this));
+            .then(function(hash){
+                if(hash){
+                    // Compare password
+                    bcrypt.compare(data.password, hash.passwordHash)
+                    .then(function(result){
+                        // If password ok
+                        if(result){
+                            // Create token
+                            var token = this.createToken(data.username, hash.uid, hash.type);
+                            // Get user detail
+                            user.getUserDetail(data.username)
+                            .then(function(result){
+                                resolve(Object.assign({token: token},result));
+                            })
+                            .catch(function(){
+                                reject();
+                            });
+                        }
+                        else{
+                            resolve(null);
+                        }
+                    }.bind(this));
+                }
+                else
+                    resolve(null);
             }.bind(this))
             .catch(function(error){
-                reject(error);
+                reject();
             });
         }.bind(this));
     }
 
-    createToken(username){
+    createToken(username, uid, type){
+        var params = {username: username, uid: uid, scope: [type]};
         return jwt.sign(
-            {username: username},
+            params,
             config.tsecret,
-            {algorithm: 'HS256', expiresIn: "1m"}
+            {algorithm: 'HS256', expiresIn: "1h"}
         );
     }
 }
