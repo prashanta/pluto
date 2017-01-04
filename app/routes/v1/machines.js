@@ -109,26 +109,27 @@ export default [
                 else
                     return Promise.reject(Boom.badImplementation());
             })
-            // Check if machine exists
+            // Check if tenentId match
             .then(function(result){
                 if(result){
-                    if(tenantId === result)
-                        return machine.isMachineExist(tenantId, data.code);
-                    else{
-                        return Promise.reject(Boom.unauthorized('Cannot add machine in unauthorized workcell'));
-                    }
+                    return (tenantId === result)? Promise.resolve() :
+                    Promise.reject(Boom.unauthorized('Cannot add machine in unauthorized workcell'));
                 }
                 else
                     return Promise.reject(Boom.badRequest('Invalid workcell'));
             })
-            // Add machine
+            // Check if machine exist
+            .then(function(){
+                return machine.isMachineExist(tenantId, data.code);
+            })
+            // Add machine (if machine does not exist)
             .then(function(result){
-                logger.log(result);
                 if(result === 0)
                     return machine.addMachine(data);
                 else
                     return Promise.reject(Boom.conflict('Machine already exist'));
             })
+            // Send response
             .then(function(result){
                 reply(result);
             })
@@ -159,5 +160,7 @@ export default [
                 scope: ['admin']
             }
         },
-    }
+    },
+
+
 ];
