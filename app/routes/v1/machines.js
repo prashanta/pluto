@@ -6,6 +6,7 @@ import config from '../../config';
 import MachineService from '../../service/machine';
 import WorkcellService from '../../service/workcell';
 import UserService from '../../service/user';
+import ActivateService from '../../service/activate';
 
 var logger = tracer.console({level:config.logLevel});
 
@@ -109,7 +110,7 @@ export default [
                 else
                     return Promise.reject(Boom.badImplementation());
             })
-            // Check if tenentId match
+            // Check if tenantId match
             .then(function(result){
                 if(result){
                     return (tenantId === result)? Promise.resolve() :
@@ -159,8 +160,63 @@ export default [
                 strategy: 'jwt',
                 scope: ['admin']
             }
-        },
+        }
     },
+    // Get activation code
+    {
+        method: 'GET',
+        path: '/api/v1/machines/{id}/activate',
+        handler: function(request, reply){
+            //var uid = request.auth.credentials.uid;
+            var activate = new ActivateService();
+            activate.genMachineActivationCode()
+            .then(function(result){
+                return activate.storeMachineActivationCode(request.params.id, result);
+            })
+            .then(function(){
+                reply("done");
+            });
+        },
+        config:{
+            validate:{
+                params:{
+                    id: Joi.number().integer()
+                }
+            }
+            // ,
+            // auth:{
+            //     strategy: 'jwt',
+            //     scope: ['admin','user']
+            // }
+        }
+    },
+    // Validate activation code
+    {
+        method: 'GET',
+        path: '/api/v1/machines/validate/{code}',
+        handler: function(request, reply){
+            var activate = new ActivateService();
+            activate.validateMachineActivationCode(request.params.code)
+            .then(function(result){
+                if(result)
+                    reply(result);
+                else
+                    reply(Boom.badRequest('Could not validate machine'));
+            });
+        },
+        config:{
+            validate:{
+                params:{
+                    code: Joi.number().integer()
+                }
+            }
+            // ,
+            // auth:{
+            //     strategy: 'jwt',
+            //     scope: ['admin','user']
+            // }
+        }
+    }
 
 
 ];

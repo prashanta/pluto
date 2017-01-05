@@ -46,7 +46,7 @@ export default class Authenticate{
                     }.bind(this));
                 }
                 else
-                    resolve(null);
+                resolve(null);
             }.bind(this))
             .catch(function(error){
                 reject();
