@@ -1,32 +1,33 @@
 /*jshint esversion: 6 */
 
 import Hapi from 'hapi';
-import config from './config';
+import _config from 'config';
+//import config from './config';
 import Inert from 'inert';
 import Routes from './routes';
-import pjson from '../package.json';
+import Msg from './msg';
+import pjson from '../../package.json';
 import Good from 'good';
 import jwtauth from 'hapi-auth-jwt';
-import geoip from 'geoip-lite';
 
+var config = _config.default;
 
+const logger = config.logger;
 const server = new Hapi.Server({debug:{request:['error']}});
+const msg = new Msg();
 
-console.log(`Starting application ... ${config.name} - ${config.version}`);
+logger.info(`Starting application ... ${config.name} - ${config.version}`);
 
 server.connection({host:'localhost', port: config.port});
 
 server.start((err)=>{
-    if(err){
-        throw err;
-    }
-    console.log(`Server running at ${server.info.uri}`);
+    if(err) throw err;
+    logger.info(`Server running at ${server.info.uri}`);
 });
 
 
 server.register([Inert, jwtauth], err=>{
-    if(err)
-        throw err;
+    if(err) throw err;
 
     var validate = function (request, decodedToken, callback) {
         var error, credentials = decodedToken || null;
@@ -46,16 +47,20 @@ server.register([Inert, jwtauth], err=>{
         }
     );
 
+    // REGISTER ROUTES
     Routes(server);
+
+    // SUBSCRIBE TO CHANNELS
+    msg.subscribeMDCs();
 
     server.route({
         method: 'GET',
         path: '/',
         handler: function (request, reply) {
             var ip = request.headers['x-forwarded-for'] || request.info.remoteAddress;
-            console.log(geoip.lookup(ip));
-            console.log(ip);
             reply.file('app/public/index.html');
         }
     });
 });
+
+export default server;

@@ -4,8 +4,10 @@
 import models from '../models';
 import Promise from 'bluebird';
 import tracer from 'tracer';
+import _config from 'config';
+const config = _config.default;
 
-var logger = tracer.console();
+var logger = config.logger;
 
 export default class Workcell{
     constructor(){

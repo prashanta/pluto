@@ -2,7 +2,7 @@
 
 export default function(sequelize, DataTypes) {
     var Customer = sequelize.define("customer", {
-        companyId: DataTypes.INTEGER,
+        tenantId: DataTypes.INTEGER,
         code: DataTypes.STRING(50),
         name: DataTypes.STRING(200),
         status: DataTypes.INTEGER

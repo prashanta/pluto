@@ -10,7 +10,8 @@ export default function(sequelize, DataTypes) {
         country: DataTypes.STRING(100),
         postalCode: DataTypes.STRING(100),
         emailDomain: DataTypes.STRING(100),
-        website: DataTypes.STRING(200)
+        website: DataTypes.STRING(200),
+        channelId: {type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4},
     },
     {
         timestamps: true,

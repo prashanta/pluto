@@ -5,11 +5,13 @@ import Boom from 'boom';
 import TenantService from '../../service/tenant';
 import UserService from '../../service/user';
 import tracer from 'tracer';
-import config from '../../config';
+import _config from 'config';
+const config = _config.default;
 
-var logger = tracer.console({level:config.logLevel});
+var logger = config.logger;
+
 export default [
-    // Get list of tenants
+    // GET LIST OF TENANTS
     {
         method: 'GET',
         path: '/api/v1/tenants',
@@ -30,7 +32,7 @@ export default [
             }
         }
     },
-    // Add new tenant - first add tenant then add admin user
+    // ADD NEW TENANT - first add tenant then add admin user
     {
         method: 'POST',
         path: '/api/v1/tenants',
@@ -48,7 +50,7 @@ export default [
                         data.tenantId = result.getDataValue('id');
                         user.addAdmin(data)
                         .then(function(result){
-                            reply("Tenant Added");
+                            reply({result: 1});
                         })
                         .catch(function(){
                             reject(Boom.badImplementation());

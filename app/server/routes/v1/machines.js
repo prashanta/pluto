@@ -2,12 +2,14 @@
 import Joi from 'joi';
 import Boom from 'boom';
 import tracer from 'tracer';
-import config from '../../config';
-import MachineService from '../../service/machine';
+import _config from 'config';
+import * as MachineService from '../../service/machine';
 import WorkcellService from '../../service/workcell';
 import UserService from '../../service/user';
-import ActivateService from '../../service/activate';
+import * as ActivateService from '../../service/activate';
+import * as AuthService from '../../service/authenticate';
 
+var config = _config.default;
 var logger = tracer.console({level:config.logLevel});
 
 export default [
@@ -17,13 +19,12 @@ export default [
         method: 'GET',
         path: '/api/v1/workcells/{wid}/machines',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
-            var machine = new MachineService();
+            var uuid = request.auth.credentials.uuid;
             var user = new UserService();
-            user.getTenantId(uid)
+            user.getTenantId(uuid)
             .then(function(result){
                 if(result){
-                    machine.getWorkcellMachines(result, request.params.wid)
+                    MachineService.getWorkcellMachines(result, request.params.wid)
                     .then(function(result){
                         reply(result);
                     })
@@ -58,13 +59,12 @@ export default [
         method: 'GET',
         path: '/api/v1/machines',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
-            var machine = new MachineService();
+            var uuid = request.auth.credentials.uuid;
             var user = new UserService();
-            user.getTenantId(uid)
+            user.getTenantId(uuid)
             .then(function(result){
                 if(result){
-                    machine.getAllMachines(result)
+                    MachineService.getAllMachines(result)
                     .then(function(result){
                         reply(result);
                     })
@@ -93,14 +93,13 @@ export default [
         method: 'POST',
         path: '/api/v1/workcells/{wid}/machines',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
+            var uuid = request.auth.credentials.uuid;
             var data = Object.assign(request.payload, {workcellId: request.params.wid});
-            var machine = new MachineService();
             var user = new UserService();
             var workcell = new WorkcellService();
             var tenantId = null;
             // Get user's tenantId
-            user.getTenantId(uid)
+            user.getTenantId(uuid)
             // Get workcell's tenantId
             .then(function(result){
                 if(result){
@@ -121,12 +120,12 @@ export default [
             })
             // Check if machine exist
             .then(function(){
-                return machine.isMachineExist(tenantId, data.code);
+                return MachineService.isMachineExist(tenantId, data.code);
             })
             // Add machine (if machine does not exist)
             .then(function(result){
                 if(result === 0)
-                    return machine.addMachine(data);
+                    return MachineService.addMachine(data);
                 else
                     return Promise.reject(Boom.conflict('Machine already exist'));
             })
@@ -167,14 +166,25 @@ export default [
         method: 'GET',
         path: '/api/v1/machines/{id}/activate',
         handler: function(request, reply){
-            //var uid = request.auth.credentials.uid;
-            var activate = new ActivateService();
-            activate.genMachineActivationCode()
+            var activationCode;
+            var uuid = request.auth.credentials.uuid;
+
+            //TODO Check if machine id belongs to tenant context
+
+            ActivateService.genMachineActivationCode()
             .then(function(result){
-                return activate.storeMachineActivationCode(request.params.id, result);
+                activationCode = result;
+                return ActivateService.storeMachineActivationCode(request.params.id, result);
             })
             .then(function(){
-                reply("done");
+                reply({code: activationCode});
+            })
+            .catch(function(error){
+                if(error) logger.error(error);
+                if(error.isBoom)
+                    reply(error);
+                else
+                    reply(Boom.badImplementation());
             });
         },
         config:{
@@ -182,26 +192,36 @@ export default [
                 params:{
                     id: Joi.number().integer()
                 }
+            },
+            auth:{
+                strategy: 'jwt',
+                scope: ['admin','user']
             }
-            // ,
-            // auth:{
-            //     strategy: 'jwt',
-            //     scope: ['admin','user']
-            // }
         }
     },
     // Validate activation code
     {
         method: 'GET',
-        path: '/api/v1/machines/validate/{code}',
+        path: '/api/v1/machines/activate/{code}',
         handler: function(request, reply){
-            var activate = new ActivateService();
-            activate.validateMachineActivationCode(request.params.code)
+            var output = {};
+
+            ActivateService.validateMachineActivationCode(request.params.code)
             .then(function(result){
-                if(result)
-                    reply(result);
+                if(result){
+                    output.machineId = result.machineId;
+                    return MachineService.getChannelId(result.machineId);
+                }
                 else
                     reply(Boom.badRequest('Could not validate machine'));
+            })
+            .then(function(result){
+                if(result){
+                    output.channelId = result.channelId;
+                    output.token = AuthService.createMachineToken(output.machineId);
+                    logger.log(output);
+                    reply(output);
+                }
             });
         },
         config:{
@@ -210,11 +230,6 @@ export default [
                     code: Joi.number().integer()
                 }
             }
-            // ,
-            // auth:{
-            //     strategy: 'jwt',
-            //     scope: ['admin','user']
-            // }
         }
     }
 

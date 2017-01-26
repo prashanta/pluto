@@ -4,10 +4,11 @@ import Joi from 'joi';
 import Boom from 'boom';
 import UserService from '../../service/user';
 import tracer from 'tracer';
-import config from '../../config';
 import _ from 'underscore';
+import _config from 'config';
+const config = _config.default;
 
-var logger = tracer.console({level:config.logLevel});
+var logger = config.logger;
 
 export default [
     // Get all peers
@@ -15,10 +16,10 @@ export default [
         method: 'GET',
         path: '/api/v1/users',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
+            var uuid = request.auth.credentials.uuid;
             var user = new UserService();
 
-            user.getPeers(uid)
+            user.getPeers(uuid)
             .then(function(result){
                 reply(result);
             })
@@ -41,12 +42,12 @@ export default [
         method: 'POST',
         path: '/api/v1/users',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
+            var uuid = request.auth.credentials.uuid;
             var user = new UserService();
             user.isUserExist(request.payload.email)
             .then(function(result){
                 if(result === 0){
-                    user.getTenantId(uid)
+                    user.getTenantId(uuid)
                     .then(function(result){
                         var data = Object.assign(request.payload, {tenantId: result});
                         user.addUser(data)

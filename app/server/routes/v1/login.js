@@ -2,22 +2,21 @@
 
 import Joi from 'joi';
 import Boom from 'boom';
-import AuthService from '../../service/authenticate';
+import * as AuthService from '../../service/authenticate';
 import UserService from '../../service/user';
-import tracer from 'tracer';
-import config from '../../config';
+import _config from 'config';
 import _ from 'underscore';
 
-var logger = tracer.console({level:config.logLevel});
+var config = _config.default;
+const logger = config.logger;
 
 export default [
-    // Login
+    // Login a user
     {
         method: 'POST',
         path: '/api/v1/login',
         handler: function(request, reply){
-            var auth = new AuthService();
-            auth.login(request.payload)
+            AuthService.login(request.payload)
             .then(function(result){
                 if(result){
                     reply(result);
@@ -38,5 +37,19 @@ export default [
                 }
             }
         }
+    },
+    // Validate a previously granted token
+    {
+        method: 'GET',
+        path: '/api/v1/token/validate',
+        handler: function(request, reply){
+            reply({result: 1});
+        },
+        config:{
+            auth:{
+                strategy: 'jwt'
+            }
+        }
     }
+
 ];

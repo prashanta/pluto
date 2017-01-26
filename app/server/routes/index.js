@@ -2,6 +2,11 @@
 
 import fs from 'fs';
 import path from 'path';
+import _config from 'config';
+
+var config = _config.default;
+
+const logger = config.logger;
 
 export default function(server){
     var routes = [];
@@ -25,12 +30,11 @@ export default function(server){
         routes.push(route);
     });
 
-console.log('ADDING ROUTES: ');
+    logger.debug('ADDING ROUTES: ');
     routes.forEach(function(route) {
         route.forEach(function(api) {
-            console.log(`${api.method} \t ${api.path}`);
+            logger.debug(`${api.method} \t ${api.path}`);
             server.route(api);
         });
-        console.log('\n');
     });
 }

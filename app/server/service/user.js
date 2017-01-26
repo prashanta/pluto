@@ -4,9 +4,10 @@ import models from '../models';
 import Promise from 'bluebird';
 import tracer from 'tracer';
 import bcrypt from 'bcrypt';
-import config from '../config';
+import _config from 'config';
+const config = _config.default;
 
-var logger = tracer.console({level:config.logLevel});
+var logger = config.logger;
 
 export default class User{
     constructor(){
@@ -47,16 +48,16 @@ export default class User{
     }
 
     // Get list of peers
-    getPeers(uid){
+    getPeers(uuid){
         return new Promise(function(resolve,reject){
-            this.getTenantId(uid)
+            this.getTenantId(uuid)
             .then(function(result){
                 logger.log(result);
                 if(result === null)
                     reject();
                 else{
                     models.user.findAll({
-                        attributes: ['email','uid','firstName','lastName','type'],
+                        attributes: ['email','uuid','firstName','lastName','type'],
                         where: {tenantId: result, active: 1}
                     })
                     .then(function(result){
@@ -78,7 +79,7 @@ export default class User{
     getUsersForTenant(id){
         return new Promise(function(resolve,reject){
             models.user.findAll({
-                attributes: ['email','uid','firstName','lastName','type'],
+                attributes: ['email','uuid','firstName','lastName','type'],
                 where: {tenantId: id, active: 1}
             })
             .then(function(result){
@@ -105,10 +106,10 @@ export default class User{
         });
     }
 
-    getTenantId(uid){
+    getTenantId(uuid){
         return new Promise(function(resolve,reject){
             models.user.findOne({
-                where:{uid: uid},
+                where:{uuid: uuid},
                 attributes:['tenantId']
             })
             .then(function(result){
@@ -127,7 +128,7 @@ export default class User{
     getPasswordHash(username){
         return new Promise(function(resolve,reject){
             models.user.findOne({
-                attributes: ['passwordHash', 'uid', 'type'],
+                attributes: ['passwordHash', 'uuid', 'type'],
                 where: {email: username}
             })
             .then(function(result){
@@ -142,9 +143,9 @@ export default class User{
         });
     }
 
-    isUserAdmin(uid){
+    isUserAdmin(uuid){
         return new Promise(function(resolve, reject) {
-            models.user.findOne({attributes: ['type'], where: {uid: uid, active: 1}})
+            models.user.findOne({attributes: ['type'], where: {uuid: uuid, active: 1}})
             .then(function(result){
                 if(result.getDataValue('type') == 'admin')
                     resolve(1);

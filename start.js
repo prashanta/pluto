@@ -1,3 +1,3 @@
 require('babel-register')();
 
-require('./app/main');
+require('./app/server/main');

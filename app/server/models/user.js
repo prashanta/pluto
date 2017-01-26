@@ -3,7 +3,7 @@
 export default function(sequelize, DataTypes) {
     var User = sequelize.define("user", {
         tenantId: DataTypes.INTEGER,
-        uid: {type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4},
+        uuid: {type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4},
         passwordHash: {type: DataTypes.STRING(300)},
         firstName: DataTypes.STRING(100),
         lastName: DataTypes.STRING(100),

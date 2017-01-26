@@ -3,11 +3,12 @@
 import Joi from 'joi';
 import Boom from 'boom';
 import tracer from 'tracer';
-import config from '../../config';
 import WorkcellService from '../../service/workcell';
 import UserService from '../../service/user';
+import _config from 'config';
+const config = _config.default;
 
-var logger = tracer.console({level:config.logLevel});
+var logger = config.logger;
 
 export default [
     // Get workcells for a tenant
@@ -41,10 +42,10 @@ export default [
         method: 'GET',
         path: '/api/v1/workcells',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
+            var uuid = request.auth.credentials.uuid;
             var workcell = new WorkcellService();
             var user = new UserService();
-            user.getTenantId(uid)
+            user.getTenantId(uuid)
             .then(function(result){
                 if(result){
                     workcell.getWorkcells(result)
@@ -74,10 +75,10 @@ export default [
         method: 'GET',
         path: '/api/v1/workcells/{id}',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
+            var uuid = request.auth.credentials.uuid;
             var workcell = new WorkcellService();
             var user = new UserService();
-            user.getTenantId(uid)
+            user.getTenantId(uuid)
             .then(function(result){
                 if(result){
                     workcell.getWorkcellInfo(result, request.params.id)
@@ -113,11 +114,11 @@ export default [
         method: 'POST',
         path: '/api/v1/workcells',
         handler: function(request, reply){
-            var uid = request.auth.credentials.uid;
+            var uuid = request.auth.credentials.uuid;
             var workcell = new WorkcellService();
             var user = new UserService();
 
-            user.getTenantId(uid)
+            user.getTenantId(uuid)
             .then(function(result){
                 if(result){
                     var data = Object.assign(request.payload, {tenantId: result});

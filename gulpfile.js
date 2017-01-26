@@ -4,7 +4,7 @@ var gulp = require('gulp'),
     node;
 
 gulp.task('lint', function(){
-    return gulp.src(['./app/**/**/*.js', '!node_modlues/**'])
+    return gulp.src(['./app/server/**/**/*.js', '!node_modlues/**'])
     .pipe(eslint())
     .pipe(eslint.format());
 });
@@ -20,7 +20,7 @@ gulp.task('server', ['lint'], function() {
 });
 
 gulp.task('default', ['server'], function(){
-    gulp.watch(['./app/**/*.js'], ['server']);
+    gulp.watch(['./app/server/**/*.js'], ['server']);
 });
 
 // clean up if an error goes unhandled.
