@@ -13,7 +13,8 @@ import jwtauth from 'hapi-auth-jwt';
 var config = _config.default;
 
 const logger = config.logger;
-const server = new Hapi.Server({debug:{request:['error']}});
+const server = new Hapi.Server();
+// const server = new Hapi.Server({debug:{request:['error']}});
 const msg = new Msg();
 
 logger.info(`Starting application ... ${config.name} - ${config.version}`);

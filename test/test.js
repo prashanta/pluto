@@ -8,6 +8,8 @@ var should = chai.should();
 
 chai.use(chaiHttp);
 
+var token = null;
+
 describe('Init', function () {
   // CLEAR DATABASE
   before('Clear database', function (done) {
@@ -25,43 +27,19 @@ describe('Init', function () {
   });
 
   describe('REST API', function () {
-    
+
     before(function(){
       require('../app/server/main');
     });
 
-    describe('Tenant API', function () {
-      console.log("flag-1");
+    describe('TENANT API', function () {
       require('./tenants');
     });
-
-    describe('Samples', function() {
-      it('should list ALL blobs on /blobs GET', function (){
-        console.log("flag-3");
-        return null;
-      });
-
-      it('should list a SINGLE blob on /blob/<id> GET', function (done){
-        setTimeout(function () {
-          done();
-        }, 2000);
-      });
-
-      it('should add a SINGLE blob on /blobs POST', function (done){
-        setTimeout(function () {
-          done();
-        }, 2000);
-      });
-
-      it('should update a SINGLE blob on /blob/<id> PUT', function (done){
-        done();
-      });
-
-      it('should delete a SINGLE blob on /blob/<id> DELETE', function (done){
-        done();
-      });
+    //
+    describe('WORKCELL API TEST', function () {
+      require('./workcells');
     });
 
-
   });
+
 });
